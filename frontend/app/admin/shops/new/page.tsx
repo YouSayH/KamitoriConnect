@@ -16,7 +16,8 @@ export default function CreateShopPage() {
         description: '',
         location: '',
         category: '',
-        map_url: ''
+        map_url: '',
+        reservation_url: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -63,6 +64,17 @@ export default function CreateShopPage() {
                                 name="map_url" 
                                 placeholder="https://maps.app.goo.gl/..." 
                                 value={formData.map_url} 
+                                onChange={handleChange} 
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reservation_url">予約サイト URL (任意)</Label>
+                            <Input 
+                                id="reservation_url" 
+                                name="reservation_url" 
+                                placeholder="https://tabelog.com/..." 
+                                value={formData.reservation_url} 
                                 onChange={handleChange} 
                             />
                         </div>

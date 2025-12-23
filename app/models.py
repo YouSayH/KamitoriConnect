@@ -15,6 +15,7 @@ class Shop(Base):
     location: Mapped[str] = mapped_column(String(255), nullable=True) # 場所
     category: Mapped[str] = mapped_column(String(100), nullable=True) # カテゴリ (例: ラーメン, 雑貨)
     map_url: Mapped[str] = mapped_column(String(500), nullable=True) # GoogleMapのURL
+    reservation_url: Mapped[str] = mapped_column(String(500), nullable=True) # 予約サイトのURL
 
     # リレーション: 店舗に関連する投稿
     posts = relationship("Post", back_populates="shop", cascade="all, delete-orphan")

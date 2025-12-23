@@ -20,7 +20,8 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
         description: '',
         location: '',
         category: '',
-        map_url: ''
+        map_url: '',
+        reservation_url: ''
     });
     const [loading, setLoading] = useState(true);
 
@@ -33,7 +34,8 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
                         description: res.data.description || '',
                         location: res.data.location || '',
                         category: res.data.category || '',
-                        map_url: res.data.map_url || ''
+                        map_url: res.data.map_url || '',
+                        reservation_url: res.data.reservation_url || ''
                     });
                     setLoading(false);
                 })
@@ -94,6 +96,16 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
                         <div className="space-y-2">
                             <Label htmlFor="map_url">Google Map URL</Label>
                             <Input id="map_url" name="map_url" value={formData.map_url} onChange={handleChange} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reservation_url">予約サイト URL (任意)</Label>
+                            <Input 
+                                id="reservation_url" 
+                                name="reservation_url" 
+                                value={formData.reservation_url} 
+                                onChange={handleChange} 
+                            />
                         </div>
 
                         <div className="space-y-2">

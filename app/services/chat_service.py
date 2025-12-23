@@ -16,7 +16,7 @@ async def generate_chat_response(db: AsyncSession, message: str, history: list[C
     # 2. 店舗データをプロンプト用に整形
     shops_context = ""
     for shop in shops:
-        shops_context += f"- ID: {shop.id}, Name: {shop.name}, Category: {shop.category}, Description: {shop.description}, Location: {shop.location}, Map URL: {shop.map_url}\n"
+        shops_context += f"- ID: {shop.id}, Name: {shop.name}, Category: {shop.category}, Description: {shop.description}, Location: {shop.location}, Map URL: {shop.map_url}, Reservation URL: {shop.reservation_url}\n"
         
     # 3. システムプロンプトの構築
     # ここでAIの役割（ペルソナ）と知識（店舗リスト）を定義します
@@ -28,6 +28,7 @@ async def generate_chat_response(db: AsyncSession, message: str, history: list[C
     
     Please answer the user's question based on this information.
     If the user asks about location or where a shop is, please provide the 'Map URL' if available.
+    If the user asks about reservation or booking, provide the 'Reservation URL' if available.
     Respond in the same language as the user's question.
     """
     # Gemini APIの形式 (types.Content) に変換
