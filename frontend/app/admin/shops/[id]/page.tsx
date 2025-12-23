@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import api from '@/lib/api';
+import { MapPinned } from 'lucide-react';
 
 export default function EditShopPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -56,6 +57,11 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
             console.error("Failed to update shop", error);
         }
     };
+    const getEmbedUrl = (url: string) => {
+        if (!url) return null;
+        if (url.includes("output=embed")) return url;
+        return `https://maps.google.com/maps?q=$0{encodeURIComponent(url)}&output=embed`;
+    };
 
     const handleDelete = async () => {
         if (confirm('本当にこの店舗を削除してもよろしいですか？')) {
@@ -93,9 +99,39 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
                             <Input id="location" name="location" value={formData.location} onChange={handleChange} />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="map_url">Google Map URL</Label>
-                            <Input id="map_url" name="map_url" value={formData.map_url} onChange={handleChange} />
+                        <div className="space-y-2 relative group">
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="map_url">Google Map URL</Label>
+                                {formData.map_url && (
+                                    <div className="flex items-center gap-1 text-xs text-blue-600 cursor-help font-medium border-b border-blue-600 border-dotted">
+                                        <MapPinned size={14} />
+                                        ホバーでプレビュー
+                                    </div>
+                                )}
+                            </div>
+                            <Input 
+                                id="map_url" 
+                                name="map_url" 
+                                value={formData.map_url} 
+                                onChange={handleChange} 
+                                placeholder="住所またはURLを入力"
+                            />
+                            
+                            {/* マウスホバー時のみ表示される絶対配置のプレビュー窓 */}
+                            {formData.map_url && (
+                                <div className="absolute left-0 top-full mt-2 z-50 w-full max-w-sm hidden group-hover:block transition-all duration-200">
+                                    <div className="bg-white border rounded-lg shadow-2xl overflow-hidden h-64 w-full">
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            style={{ border: 0 }}
+                                            src={getEmbedUrl(formData.map_url) || ""}
+                                            allowFullScreen
+                                            loading="lazy"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-2">

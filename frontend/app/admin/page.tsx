@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import api from '@/lib/api';
+import { MapPinned } from 'lucide-react';
 
 interface Shop {
     id: number;
@@ -16,6 +17,13 @@ interface Shop {
 
 export default function AdminDashboard() {
     const [shops, setShops] = useState<Shop[]>([]);
+
+    const getEmbedUrl = (url: string) => {
+        if (!url) return null;
+        if (url.includes("output=embed")) return url;
+        // ${ } を使って正しく変数展開します
+        return `https://maps.google.com/maps?q=$0{encodeURIComponent(url)}&output=embed`;
+    };
 
     useEffect(() => {
         fetchShops();
@@ -52,16 +60,34 @@ export default function AdminDashboard() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-gray-500 mb-2">{shop.category}</p>
+
                             {shop.map_url && (
-                                <a 
-                                    href={shop.map_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-500 hover:underline mb-2 block"
-                                >
-                                    📍 Google Map
-                                </a>
+                                <div className="relative group mb-2"> {/* relative group でホバーを検知 */}
+                                    <a 
+                                        href={shop.map_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-blue-500 hover:underline flex items-center gap-1"
+                                    >
+                                        <MapPinned size={14} /> Google Map
+                                    </a>
+                                    
+                                    {/* ホバー時に浮き出るプレビュー窓 (z-50で最前面に表示) */}
+                                    <div className="absolute left-0 top-full mt-1 z-50 w-64 hidden group-hover:block transition-all">
+                                        <div className="bg-white border rounded-md shadow-xl overflow-hidden h-48 w-full">
+                                            <iframe
+                                                width="100%"
+                                                height="100%"
+                                                style={{ border: 0 }}
+                                                src={getEmbedUrl(shop.map_url) || ""}
+                                                allowFullScreen
+                                                loading="lazy"
+                                            ></iframe>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
+
                             <p className="line-clamp-3 mb-4">{shop.description}</p>
                             <div className="flex justify-end space-x-2">
                                 <Link href={`/admin/shops/${shop.id}`}>
