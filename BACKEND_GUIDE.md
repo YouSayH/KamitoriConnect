@@ -79,3 +79,6 @@ async def get_shops(db: AsyncSession = Depends(get_db)):
 ## 6. AI連携 (Google GenAI)
 `app/services/ai_service.py` で管理しています。
 Googleの `google-genai` ライブラリを使用しており、非同期ではなく同期的な処理になる場合もあるため、重い処理は工夫が必要ですが、現状はFastAPIの通常の関数呼び出しの中で行っています。
+
+
+uvicorn app.main:app --reload --port 8000 

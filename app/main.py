@@ -42,7 +42,7 @@ app.add_middleware(
 )
 
 from fastapi.staticfiles import StaticFiles
-from app.routers import shops, posts, chat
+from app.routers import shops, posts, chat, auth
 
 # 静的ファイルの配信設定
 # 投稿された画像を /static/... でアクセスできるようにします
@@ -50,6 +50,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # ルーターの登録
 # 各機能のAPIエンドポイントをアプリケーションに追加します
+app.include_router(auth.router)
 app.include_router(shops.router)
 app.include_router(posts.router)
 app.include_router(chat.router)

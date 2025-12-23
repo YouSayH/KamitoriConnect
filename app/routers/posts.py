@@ -5,6 +5,8 @@ from typing import List
 from app.database import get_db
 from app.schemas.post import PostResponse
 from app.services import post_service
+from app.auth import get_current_user
+from app.models import User
 
 router = APIRouter(
     prefix="/posts",
@@ -16,10 +18,11 @@ async def create_post(
     shop_id: int = Form(...), # フォームデータとしてshop_idを受け取る
     text: str = Form(...),    # フォームデータとしてテキストを受け取る
     image: UploadFile = File(...), # ファイルアップロードとして画像を受け取る
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
-    AIを使った記事作成API
+    AIを使った記事作成API (ログイン必須)
     写真とコメントを受け取り、AI生成・翻訳を行った上で投稿を作成します。
     """
     try:

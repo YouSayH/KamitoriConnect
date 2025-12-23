@@ -3,7 +3,14 @@ uvicorn
 sqlalchemy[asyncio]
 aiosqlite
 aiomysql
-pydantic-settings
+pydantic
+sqlalchemy
+aiosqlite
+aiomysql
 python-dotenv
 google-genai
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+email-validator
 python-multipart
