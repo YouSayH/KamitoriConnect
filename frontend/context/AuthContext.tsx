@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const login = (newToken: string) => {
         localStorage.setItem('token', newToken);
+        document.cookie = `token=${newToken}; path=/; max-age=18000; SameSite=Lax`;
         setToken(newToken);
         setIsAuthenticated(true);
         router.push('/admin'); // Redirect to admin after login
@@ -41,6 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        document.cookie = "token=; path=/; max-age=0";
         setToken(null);
         setIsAuthenticated(false);
         router.push('/login');
