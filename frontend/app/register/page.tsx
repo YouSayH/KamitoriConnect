@@ -12,6 +12,7 @@ import Link from 'next/link';
 export default function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [inviteCode, setInviteCode] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);
@@ -22,16 +23,25 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            const res = await api.post('/auth/register', { email, password });
+            const res = await api.post('/auth/register', { email, password, invite_code: inviteCode });
             // Should auto-login or redirect to login? 
             // The API returns a token, so we can auto-login.
             login(res.data.access_token);
         } catch (err: any) {
             console.error(err);
             if (err.response && err.response.status === 400) {
-                setError('Email already registered.');
+                // バックエンドからのエラー詳細を取得
+                const detail = err.response.data.detail;
+                
+                if (detail === "Invalid invitation code") {
+                    setError('招待コードが間違っています。');
+                } else if (detail === "Email already registered") {
+                    setError('このメールアドレスは既に登録されています。');
+                } else {
+                    setError('登録に失敗しました。入力内容を確認してください。');
+                }
             } else {
-                setError('Registration failed. Please try again.');
+                setError('登録処理に失敗しました。サーバーエラーの可能性があります。');
             }
         } finally {
             setLoading(false);
@@ -63,6 +73,17 @@ export default function RegisterPage() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="inviteCode">招待コード</Label>
+                            <Input
+                                id="inviteCode"
+                                type="text"
+                                placeholder="配布されたコードを入力してください"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value)}
                                 required
                             />
                         </div>

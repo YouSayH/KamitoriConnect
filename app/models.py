@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, TIMESTAMP, func
+from sqlalchemy import String, Text, ForeignKey, TIMESTAMP, func
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from .database import Base
 import datetime
@@ -14,6 +14,7 @@ class Shop(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True) # 店舗説明
     location: Mapped[str] = mapped_column(String(255), nullable=True) # 場所
     category: Mapped[str] = mapped_column(String(100), nullable=True) # カテゴリ (例: ラーメン, 雑貨)
+    map_url: Mapped[str] = mapped_column(String(500), nullable=True) # GoogleMapのURL
 
     # リレーション: 店舗に関連する投稿
     posts = relationship("Post", back_populates="shop", cascade="all, delete-orphan")

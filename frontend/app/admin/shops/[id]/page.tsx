@@ -19,7 +19,8 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
         name: '',
         description: '',
         location: '',
-        category: ''
+        category: '',
+        map_url: ''
     });
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,8 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
                         name: res.data.name,
                         description: res.data.description || '',
                         location: res.data.location || '',
-                        category: res.data.category || ''
+                        category: res.data.category || '',
+                        map_url: res.data.map_url || ''
                     });
                     setLoading(false);
                 })
@@ -87,6 +89,11 @@ export default function EditShopPage({ params }: { params: Promise<{ id: string 
                         <div className="space-y-2">
                             <Label htmlFor="location">場所</Label>
                             <Input id="location" name="location" value={formData.location} onChange={handleChange} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="map_url">Google Map URL</Label>
+                            <Input id="map_url" name="map_url" value={formData.map_url} onChange={handleChange} />
                         </div>
 
                         <div className="space-y-2">

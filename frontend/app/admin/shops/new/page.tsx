@@ -15,7 +15,8 @@ export default function CreateShopPage() {
         name: '',
         description: '',
         location: '',
-        category: ''
+        category: '',
+        map_url: ''
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -53,6 +54,17 @@ export default function CreateShopPage() {
                         <div className="space-y-2">
                             <Label htmlFor="location">場所</Label>
                             <Input id="location" name="location" placeholder="例: 北エリア, 1F" value={formData.location} onChange={handleChange} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="map_url">Google Map URL</Label>
+                            <Input 
+                                id="map_url" 
+                                name="map_url" 
+                                placeholder="https://maps.app.goo.gl/..." 
+                                value={formData.map_url} 
+                                onChange={handleChange} 
+                            />
                         </div>
 
                         <div className="space-y-2">

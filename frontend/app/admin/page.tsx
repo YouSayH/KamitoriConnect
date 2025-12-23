@@ -11,6 +11,7 @@ interface Shop {
     name: string;
     category: string;
     description: string;
+    map_url?: string;
 }
 
 export default function AdminDashboard() {
@@ -51,6 +52,16 @@ export default function AdminDashboard() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-gray-500 mb-2">{shop.category}</p>
+                            {shop.map_url && (
+                                <a 
+                                    href={shop.map_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-500 hover:underline mb-2 block"
+                                >
+                                    📍 Google Map
+                                </a>
+                            )}
                             <p className="line-clamp-3 mb-4">{shop.description}</p>
                             <div className="flex justify-end space-x-2">
                                 <Link href={`/admin/shops/${shop.id}`}>

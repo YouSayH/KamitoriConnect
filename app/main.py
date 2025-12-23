@@ -17,7 +17,8 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
-    # 終了時の処理: (今回は特になし)
+    # 終了時の処理:
+    await engine.dispose()
 
 app = FastAPI(
     title="Kamitori Connect API",

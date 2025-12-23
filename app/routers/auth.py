@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -5,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.database import get_db
 from app.models import User
 from app.auth import get_password_hash, verify_password, create_access_token, get_current_user
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/auth",
@@ -16,6 +18,7 @@ class UserCreate(BaseModel):
     """ユーザー登録用のスキーマ"""
     email: str # EmailStr is strict, relaxing for now to avoid 422 on simple inputs.
     password: str
+    invite_code: str
 
 class Token(BaseModel):
     """トークンレスポンス用のスキーマ"""
@@ -27,6 +30,16 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     """
     新規ユーザー登録
     """
+    # 招待コードを取得
+    correct_invite_code = os.getenv("INVITE_CODE")
+    # 環境変数が設定されていない場合や、コードが間違っている場合はエラー
+    # (念のため correct_invite_code が None の場合もエラー扱いにして安全側に倒します)
+    if not correct_invite_code or user.invite_code != correct_invite_code:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid invitation code"
+        )
+
     # 既存ユーザーチェック
     result = await db.execute(select(User).filter(User.email == user.email))
     existing_user = result.scalars().first()

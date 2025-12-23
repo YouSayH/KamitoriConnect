@@ -9,6 +9,7 @@ class ShopBase(BaseModel):
     description: Optional[str] = None # 説明文 (任意)
     location: Optional[str] = None # 場所 (任意)
     category: Optional[str] = None # カテゴリ (任意)
+    map_url: Optional[str] = None
 
 class ShopCreate(ShopBase):
     """

@@ -1,5 +1,4 @@
 import requests
-import sys
 
 url = "http://localhost:8000/auth/register"
 payload = {

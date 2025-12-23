@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -16,5 +16,5 @@ async def chat(request: ChatRequest, db: AsyncSession = Depends(get_db)):
     AIチャットボットAPI
     ユーザーの質問を受け取り、店舗情報を元に回答を生成します。
     """
-    response_text = await chat_service.generate_chat_response(db, request.message)
+    response_text = await chat_service.generate_chat_response(db, request.message, request.history)
     return ChatResponse(response=response_text)

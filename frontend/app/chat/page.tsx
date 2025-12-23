@@ -26,12 +26,20 @@ export default function ChatPage() {
         if (!input.trim() || loading) return;
 
         const userMsg = input;
+        // 最新のメッセージ(userMsg)はAPI側でmessageフィールドとして受け取るので、
+        // ここでは「画面に表示されている過去ログ」を送る。
+        // フロントエンドの role: 'bot' を バックエンド期待の 'model' に変換する
+        const historyPayload = messages.map(msg => ({
+            role: msg.role === 'bot' ? 'model' : 'user',
+            content: msg.content
+        }));
+
         setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
         setInput('');
         setLoading(true);
 
         try {
-            const res = await api.post('/chat', { message: userMsg });
+            const res = await api.post('/chat', { message: userMsg, history: historyPayload });
             setMessages(prev => [...prev, { role: 'bot', content: res.data.response }]);
         } catch (error) {
             console.error("Chat error", error);
