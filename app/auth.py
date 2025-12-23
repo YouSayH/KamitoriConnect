@@ -1,4 +1,4 @@
-from passlib.context import CryptContext
+# from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
@@ -8,10 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .database import get_db
 from .models import User
+import bcrypt
 import os
+# from passlib.context import CryptContext # Remove passlib
 
-# パスワードハッシュ化の設定 (bcrypt)
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# ...
+
+# パスワードハッシュ化の設定 (bcrypt直接使用)
+# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT設定
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production")
@@ -22,11 +26,14 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 def verify_password(plain_password, hashed_password):
     """パスワードが一致するか検証"""
-    return pwd_context.verify(plain_password, hashed_password)
+    # bcryptはbytesを要求するためencode/decodeが必要
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
 
 def get_password_hash(password):
     """パスワードをハッシュ化"""
-    return pwd_context.hash(password)
+    # ソルトを生成してハッシュ化
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    return hashed.decode('utf-8')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """JWTアクセストークンを作成"""
