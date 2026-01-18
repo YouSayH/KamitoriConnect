@@ -17,7 +17,11 @@ class Shop(Base):
     map_url: Mapped[str] = mapped_column(String(500), nullable=True) # GoogleMapのURL
     reservation_url: Mapped[str] = mapped_column(String(500), nullable=True) # 予約サイトのURL
 
-    # リレーション: 店舗に関連する投稿
+    # 所有者ID: どのユーザーがこの店舗を管理しているか
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+
+    # リレーション
+    owner = relationship("User", back_populates="shops") # [追加] Userとの紐付け
     posts = relationship("Post", back_populates="shop", cascade="all, delete-orphan")
 
 class Post(Base):
@@ -54,10 +58,16 @@ class Translation(Base):
 
 class User(Base):
     """
-    管理者ユーザーを管理するモデル
+    ユーザー（店舗オーナーおよび管理者）を管理するモデル
     """
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    
+    # [追加] ロール: 'admin' (管理者) または 'owner' (店舗オーナー)
+    role: Mapped[str] = mapped_column(String(20), default="owner", nullable=False)
+
+    # [追加] リレーション: 所有する店舗
+    shops = relationship("Shop", back_populates="owner")

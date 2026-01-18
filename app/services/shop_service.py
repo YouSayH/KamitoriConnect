@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
+from typing import List
 from app.models import Shop
 from app.schemas.shop import ShopCreate, ShopUpdate
 
@@ -18,11 +19,28 @@ async def get_shops(db: AsyncSession, skip: int = 0, limit: int = 100):
     result = await db.execute(select(Shop).offset(skip).limit(limit))
     return result.scalars().all()
 
-async def create_shop(db: AsyncSession, shop: ShopCreate):
+async def get_unclaimed_shops(db: AsyncSession) -> List[Shop]:
+    """
+    [追加] オーナーが決まっていない店舗を取得する (登録画面用)
+    """
+    result = await db.execute(select(Shop).filter(Shop.owner_id == None))
+    return result.scalars().all()
+
+async def get_shops_by_owner(db: AsyncSession, owner_id: int) -> List[Shop]:
+    """
+    [追加] 指定されたオーナーが所有する店舗を取得する (管理画面用)
+    """
+    result = await db.execute(select(Shop).filter(Shop.owner_id == owner_id))
+    return result.scalars().all()
+
+async def create_shop(db: AsyncSession, shop: ShopCreate, owner_id: int = None):
     """
     新しい店舗を作成する
     """
-    db_shop = Shop(**shop.model_dump())
+    # Pydanticモデルから辞書に変換し、owner_idを加えてShopインスタンスを作成
+    shop_data = shop.model_dump()
+    db_shop = Shop(**shop_data, owner_id=owner_id)
+    
     db.add(db_shop)
     await db.commit() # 変更を確定
     await db.refresh(db_shop) # 新しいID等の情報を再取得
@@ -56,3 +74,16 @@ async def delete_shop(db: AsyncSession, shop_id: int):
     await db.delete(db_shop)
     await db.commit()
     return db_shop
+
+async def claim_shop(db: AsyncSession, shop_id: int, owner_id: int):
+    """
+    [追加] 既存店舗にオーナーを紐付ける
+    """
+    shop = await get_shop(db, shop_id)
+    # 店舗が存在し、かつまだオーナーがいない場合のみ紐付ける
+    if shop and shop.owner_id is None:
+        shop.owner_id = owner_id
+        await db.commit()
+        await db.refresh(shop)
+        return shop
+    return None

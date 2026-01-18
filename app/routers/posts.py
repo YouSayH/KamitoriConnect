@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.database import get_db
 from app.schemas.post import PostResponse
-from app.services import post_service
+from app.services import post_service, shop_service
 from app.auth import get_current_user
 from app.models import User
 
@@ -24,11 +24,33 @@ async def create_post(
     """
     AIを使った記事作成API (ログイン必須)
     写真とコメントを受け取り、AI生成・翻訳を行った上で投稿を作成します。
+    - Admin: どの店舗でも投稿可能
+    - Owner: 自分の店舗のみ投稿可能
     """
+    # 1. 投稿しようとしている店舗が存在するか確認
+    shop = await shop_service.get_shop(db, shop_id=shop_id)
+    if not shop:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Shop not found"
+        )
+
+    # 2. 権限チェック (管理者はOK、オーナーはその店の所有者である必要がある)
+    is_admin = getattr(current_user, "role", "owner") == "admin"
+    is_owner = shop.owner_id == current_user.id
+
+    if not (is_admin or is_owner):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to post for this shop"
+        )
+
+    # 3. 権限があればAI投稿作成処理へ進む
     try:
         return await post_service.create_post_with_ai(db, shop_id, text, image)
     except Exception as e:
         # 何らかのエラーが発生した場合は500エラーを返す
+        print(f"Error creating post: {e}") # ログにエラーを出力しておくとデバッグしやすいです
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=List[PostResponse])

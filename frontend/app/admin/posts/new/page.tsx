@@ -24,7 +24,20 @@ export default function CreatePostPage() {
 
     useEffect(() => {
         // Fetch shops for selection
-        api.get('/shops').then(res => setShops(res.data));
+        // 【変更点】管理権限のある店舗のみを取得 (/shops/managed)
+        const fetchShops = async () => {
+            try {
+                const res = await api.get('/shops/managed');
+                setShops(res.data);
+                // 店舗が1つだけなら自動選択する（UX向上）
+                if (res.data.length === 1) {
+                    setSelectedShop(res.data[0].id.toString());
+                }
+            } catch (err) {
+                console.error("Failed to fetch shops", err);
+            }
+        };
+        fetchShops();
     }, []);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +65,7 @@ export default function CreatePostPage() {
                 },
             });
             alert('AIによる記事作成と翻訳が完了しました！');
-            router.push('/admin'); // or /
+            router.push('/'); // or /
         } catch (error) {
             console.error("Failed to create post", error);
             alert('記事の作成に失敗しました。');
@@ -81,7 +94,7 @@ export default function CreatePostPage() {
                         <div className="space-y-2">
                             <Label>店舗</Label>
                             <select
-                                className="w-full p-2 border rounded-md"
+                                className="w-full p-2 border rounded-md bg-background text-sm"
                                 value={selectedShop}
                                 onChange={(e) => setSelectedShop(e.target.value)}
                                 required
@@ -91,6 +104,11 @@ export default function CreatePostPage() {
                                     <option key={shop.id} value={shop.id}>{shop.name}</option>
                                 ))}
                             </select>
+                            {shops.length === 0 && (
+                                <p className="text-xs text-red-500 mt-1">
+                                    ※ 投稿可能な店舗がありません。まずは店舗を登録または参加してください。
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -113,7 +131,7 @@ export default function CreatePostPage() {
                             )}
                         </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
+                        <Button type="submit" className="w-full" disabled={loading || shops.length === 0}>
                             {loading ? 'AIが生成中...' : '記事を作成・翻訳する'}
                         </Button>
                     </form>

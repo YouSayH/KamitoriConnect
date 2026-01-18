@@ -21,8 +21,8 @@ export default function AdminDashboard() {
     const getEmbedUrl = (url: string) => {
         if (!url) return null;
         if (url.includes("output=embed")) return url;
-        // ${ } を使って正しく変数展開します
-        return `https://maps.google.com/maps?q=$0{encodeURIComponent(url)}&output=embed`;
+        // URLエンコード処理を修正
+        return `https://maps.google.com/maps?q=${encodeURIComponent(url)}&output=embed`;
     };
 
     useEffect(() => {
@@ -31,7 +31,8 @@ export default function AdminDashboard() {
 
     const fetchShops = async () => {
         try {
-            const res = await api.get('/shops');
+            // [変更] 管理対象の店舗のみを取得するエンドポイントに変更
+            const res = await api.get('/shops/managed');
             setShops(res.data);
         } catch (error) {
             console.error("Failed to fetch shops", error);
@@ -51,6 +52,13 @@ export default function AdminDashboard() {
                     </Link>
                 </div>
             </div>
+
+            {shops.length === 0 && (
+                <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg">
+                    <p>管理対象の店舗がありません。</p>
+                    <p className="text-sm mt-2">新しい店舗を登録するか、管理者に問い合わせてください。</p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {shops.map((shop) => (
@@ -73,8 +81,8 @@ export default function AdminDashboard() {
                                     </a>
                                     
                                     {/* ホバー時に浮き出るプレビュー窓 (z-50で最前面に表示) */}
-                                    <div className="absolute left-0 top-full mt-1 z-50 w-64 hidden group-hover:block transition-all">
-                                        <div className="bg-white border rounded-md shadow-xl overflow-hidden h-48 w-full">
+                                    <div className="absolute left-0 top-full mt-1 z-50 w-64 hidden group-hover:block transition-all drop-shadow-lg">
+                                        <div className="bg-white border rounded-md overflow-hidden h-48 w-full">
                                             <iframe
                                                 width="100%"
                                                 height="100%"
