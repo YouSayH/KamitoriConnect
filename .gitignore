@@ -32,3 +32,4 @@ install_deps.py
 write_code.py
 .history
 x_mock_demo/static/uploads/*
+*.log

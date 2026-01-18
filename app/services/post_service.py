@@ -1,11 +1,9 @@
 import os
-import shutil
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import UploadFile
 from app.models import Post, Translation
-from app.schemas.post import PostCreate
 from app.services import ai_service, sns_service
 from sqlalchemy.orm import selectinload
 
