@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from fastapi import UploadFile
 from app.models import Post, Translation
 from app.schemas.post import PostCreate
-from app.services import ai_service
+from app.services import ai_service, sns_service
 from sqlalchemy.orm import selectinload
 
 UPLOAD_DIR = "static/images"
@@ -64,8 +64,31 @@ async def create_post_with_ai(db: AsyncSession, shop_id: int, original_text: str
     await db.commit()
     await db.refresh(db_post)
     
-    # レスポンス用に翻訳データも含めて再取得 (Eager loading)
-    # Post取得時にtranslationsも一緒に引いてくる
+    # === 修正ここから ===
+    # 4. X(モック)への自動投稿（多言語対応版）
+    # 日本語だけでなく、各言語版も連続で投稿して拡散力をアピールします
+    
+    # 投稿するコンテンツのリストを作成
+    sns_posts = [
+        {"lang": "JP", "text": ai_result.get("enhanced_text", original_text)},
+        {"lang": "EN", "text": ai_result.get("en")},
+        {"lang": "ZH-TW", "text": ai_result.get("zh_tw")},
+        {"lang": "ZH-CN", "text": ai_result.get("zh_cn")},
+        {"lang": "KO", "text": ai_result.get("ko")},
+    ]
+
+    print("--- Starting Multi-language SNS Posting ---")
+    for post in sns_posts:
+        if post["text"]: # テキストが存在する場合のみ投稿
+            try:
+                print(f"[SNS] Posting {post['lang']} version...")
+                # 全ての言語で画像を添付して投稿します（視覚的インパクト重視）
+                sns_service.post_to_x(text=post["text"], image_path=file_path)
+            except Exception as e:
+                print(f"[SNS] Failed to post {post['lang']} version: {e}")
+    # === 修正ここまで ===
+    
+    # レスポンス用に翻訳データも含めて再取得
     stmt = select(Post).options(selectinload(Post.translations)).where(Post.id == db_post.id)
     result = await db.execute(stmt)
     return result.scalars().first()

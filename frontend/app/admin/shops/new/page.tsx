@@ -35,7 +35,7 @@ export default function CreateShopPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/shops', formData);
+            await api.post('/shops/', formData);
             router.push('/admin');
         } catch (error) {
             console.error("Failed to create shop", error);
