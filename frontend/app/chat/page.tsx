@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import api from '@/lib/api';
 import { Send, User, Bot } from 'lucide-react';
 
@@ -26,9 +27,6 @@ export default function ChatPage() {
         if (!input.trim() || loading) return;
 
         const userMsg = input;
-        // 最新のメッセージ(userMsg)はAPI側でmessageフィールドとして受け取るので、
-        // ここでは「画面に表示されている過去ログ」を送る。
-        // フロントエンドの role: 'bot' を バックエンド期待の 'model' に変換する
         const historyPayload = messages.map(msg => ({
             role: msg.role === 'bot' ? 'model' : 'user',
             content: msg.content
@@ -49,6 +47,15 @@ export default function ChatPage() {
         }
     };
 
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, [messages]);
+
     return (
         <div className="flex flex-col h-screen bg-gray-50 p-4 md:p-8">
             <Card className="flex-1 flex flex-col max-w-2xl mx-auto w-full shadow-lg border-none">
@@ -60,8 +67,7 @@ export default function ChatPage() {
                 </CardHeader>
 
                 <CardContent className="flex-1 p-0 overflow-hidden relative">
-                    {/* ScrollArea creates a wrapper. We need to ensure it takes full height. */}
-                    <div className="h-[60vh] md:h-[70vh] overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+                    <div className="h-full overflow-y-auto p-4 space-y-4" ref={scrollRef}>
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`flex gap-2 max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -70,9 +76,31 @@ export default function ChatPage() {
                                             {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                                         </AvatarFallback>
                                     </Avatar>
+                                    
                                     <div className={`p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-green-500 text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none border'}`}>
-                                        {msg.content}
+                                        <ReactMarkdown 
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                // リンクを青色・下線付き・別タブで開くように設定
+                                                a: ({node, ...props}) => (
+                                                    <a 
+                                                        {...props} 
+                                                        className="text-blue-600 underline hover:text-blue-800 break-all" 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                    />
+                                                ),
+                                                // 箇条書きのスタイル調整
+                                                ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 my-1" />,
+                                                ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 my-1" />,
+                                                // 段落のスタイル調整
+                                                p: ({node, ...props}) => <p {...props} className="mb-1 last:mb-0" />
+                                            }}
+                                        >
+                                            {msg.content}
+                                        </ReactMarkdown>
                                     </div>
+
                                 </div>
                             </div>
                         ))}
